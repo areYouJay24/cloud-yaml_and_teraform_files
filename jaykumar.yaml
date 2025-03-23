@@ -1,5 +1,5 @@
 ---
-# PersistentVolumeClaim
+# Persistent Volume
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -49,7 +49,7 @@ spec:
             claimName: my-pvc
 
 ---
-# Container 1 Service (LoadBalancer)
+# Container 1 Service
 apiVersion: v1
 kind: Service
 metadata:
@@ -100,7 +100,7 @@ spec:
             claimName: my-pvc
 
 ---
-# Container 2 Service (ClusterIP)
+# Container 2 Service
 apiVersion: v1
 kind: Service
 metadata:

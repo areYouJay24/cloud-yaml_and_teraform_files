@@ -1,0 +1,113 @@
+---
+# PersistentVolumeClaim
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+# Container 1 Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: container1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: container1
+  template:
+    metadata:
+      labels:
+        app: container1
+    spec:
+      containers:
+        - name: container1
+          image: us-central1-docker.pkg.dev/cloud-a3-jaykumar/my-repo/container1:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 6000
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "50m"
+            limits:
+              memory: "256Mi"
+              cpu: "100m"
+          volumeMounts:
+            - mountPath: /jaykumar_PV_dir
+              name: pv-storage
+      volumes:
+        - name: pv-storage
+          persistentVolumeClaim:
+            claimName: my-pvc
+
+---
+# Container 1 Service (LoadBalancer)
+apiVersion: v1
+kind: Service
+metadata:
+  name: container1-service
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 6000
+  selector:
+    app: container1
+
+---
+# Container 2 Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: container2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: container2
+  template:
+    metadata:
+      labels:
+        app: container2
+    spec:
+      containers:
+        - name: container2
+          image: us-central1-docker.pkg.dev/cloud-a3-jaykumar/my-repo/container2:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 6001
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "50m"
+            limits:
+              memory: "256Mi"
+              cpu: "100m"
+          volumeMounts:
+            - mountPath: /jaykumar_PV_dir
+              name: pv-storage
+      volumes:
+        - name: pv-storage
+          persistentVolumeClaim:
+            claimName: my-pvc
+
+---
+# Container 2 Service (ClusterIP)
+apiVersion: v1
+kind: Service
+metadata:
+  name: container2-service
+spec:
+  ports:
+    - port: 6001
+      targetPort: 6001
+  selector:
+    app: container2
